@@ -2,7 +2,7 @@ export const COLUMNS = [
 
     
     {
-        Header:'First Name',
+        Header:'Country Name',
         accessor:'name'
     },
     {

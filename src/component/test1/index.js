@@ -1,6 +1,6 @@
 import React,{Component}from 'react';
-import logo from '../../assets/images/logo192.png'
-
+import logo from '../../assets/images/logo192.png';
+import classes from './styles.css';
 
 
 class Cat extends React.Component {
@@ -50,7 +50,7 @@ class Cat extends React.Component {
     render() {
       return (
         <div>
-          <h1>Move the mouse around!</h1>
+          <h1 className={classes.Color}>Move the mouse around!</h1>
           <Mouse render={mouse => (
             <Cat mouse={mouse} />
           )}/>

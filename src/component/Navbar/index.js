@@ -1,5 +1,6 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom';
+import './style.css';
 
 /**
 * @author
@@ -7,19 +8,15 @@ import { NavLink } from 'react-router-dom'
 **/
 
 const Navabar = (props) => {
+
+   
   return(
     <div className="menu">
-        <ul>
-            <li>
-                <NavLink to="/admin">admin</NavLink>
-                
-            </li>
-            <li>
-                
-                <NavLink to="/user">user</NavLink>
+       
+        <NavLink  to="/admin">admin</NavLink> 
+    
+        <NavLink   to="/user">user</NavLink>
 
-            </li>
-        </ul>
     </div>
    )
 

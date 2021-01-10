@@ -1,4 +1,5 @@
 import React from 'react'
+import Header from '../Header'
 import Navabar from '../Navbar'
 
 /**
@@ -9,6 +10,7 @@ import Navabar from '../Navbar'
 const Home = (props) => {
   return(
     <div>
+      <Header />
         <h1>Home</h1>
             <Navabar/>
         </div>

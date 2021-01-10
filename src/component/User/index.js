@@ -1,101 +1,117 @@
-import React ,{useMemo, useState,useEffect}from 'react';
+import React,{useMemo,useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import MOCK_DATA from '../../MOCK_DATA.json';
+import {COLUMNS} from '../../Colomns';
+import { useTable, usePagination,useGlobalFilter } from 'react-table';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import {useTable,useGlobalFilter} from 'react-table';
-
-import MOCK_DATA from '../../MOCK_DATA.json';
-import {COLUMNS} from '../../Colomns';
-import {Globalfilter} from '../../Globafilter';
+import Paper from '@material-ui/core/Paper';
+import InputBase from '@material-ui/core/InputBase';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import SearchIcon from '@material-ui/icons/Search';
+import Header from '../Header';
 
 /**
 * @author
-* @function User
+* @function Admin
 **/
 
-const User = (props) => {
+const Admin = (props) => {
 
-
-    const mockdata =MOCK_DATA
+  const mockdata =MOCK_DATA
 
   const [ob1, setOb1] = useState([...mockdata])
 
-  console.log('MOCK_DATA',mockdata);
-
-
-
-
-    
-
-  console.log('addUser',ob1);
-  
   const columns = useMemo(()=> COLUMNS,[]);
-  const data = useMemo(()=> ob1,[ob1]);
+  const data = useMemo(()=>ob1,[ob1]);
+  
 
-  console.log(data)
-
-
-
-  const tableInstance = useTable({
+  const tableInstance =useTable(
+    {
       columns,
       data,
-      
-  },useGlobalFilter);
+      initialState: { pageSize: 5 } 
+    },
+    useGlobalFilter, // useGlobalFilter!
+    usePagination
+  );
   const {
-      getTableProps,
-      getTableBodyProps,
-      headerGroups,
-      rows,
-      prepareRow,
-      globalFilteredRows,
-      state,
-        setGlobalFilter,
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    setGlobalFilter,
+    state,
+    page, // Instead of using 'rows', we'll use page,
+    // which has only the rows for the active page
 
-    } = tableInstance;
-
-    const {globalFilter}= state
-  
-    console.log('global filter:',tableInstance);
-    console.log('globalFilteredRows:', globalFilteredRows.length
-    );
-
-
-const useStyles = makeStyles((theme) => ({
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
-}));
+    // The rest of these things are super handy, too ;)
+    canPreviousPage,
+    canNextPage,
+    pageOptions,
+    pageCount,
+    gotoPage,
+    nextPage,
+    previousPage,
+    setPageSize,
+    state: { pageIndex, pageSize, globalFilter }
+  } = tableInstance
+  const useStyles = makeStyles((theme) => ({
+    formControl: {
+      margin: theme.spacing(1),
+      minWidth: 300,
+      display:'flex',
+    },
+    selectEmpty: {
+      marginTop: theme.spacing(2),
+    },
+  }));
   const classes = useStyles();
-  const [error, setError] = React.useState('');
-
   const handleChange = (event) => {
     setGlobalFilter(event.target.value);
     
   };
 
-  
+
   const add=()=>{
     const obj2 = {
-    name:"hello",
-    code:'ca1'
+    name:globalFilter,
+    code:'ca11'
     }
 
   setOb1([...ob1,obj2])
   }
-  
+
   return(
-    <div>
-      <button onClick={add}>add</button>
-      <Globalfilter filter={globalFilter }  setFilter={setGlobalFilter} />
-      <br/>
-      <FormControl variant="outlined" className={classes.formControl}>
+    <>
+    {console.log( page.length)}
+    {
+      
+      page.length!=0?" ":null
+    }
+    <Header />
+    <Paper component="form" className={classes.root} onSubmit={(e)=>e.preventDefault()}>
+      
+      <InputBase
+        className={classes.input}
+        placeholder="Search Item"
+        inputProps={{ 'aria-label': 'search google maps' }}
+      value= {globalFilter ||''} 
+        onChange={e=>setGlobalFilter(e.target.value)}
+      />
+      <IconButton type="submit"  className={classes.iconButton} aria-label="search">
+        <SearchIcon />
+      </IconButton>
+      <Divider className={classes.divider} orientation="vertical" />
+     
+    </Paper>
+
+    <FormControl variant="outlined" className={classes.formControl}>
         <InputLabel id="demo-simple-select-outlined-label">Country</InputLabel>
         <Select
           labelId="demo-simple-select-outlined-label"
@@ -108,266 +124,56 @@ const useStyles = makeStyles((theme) => ({
             <em>None</em>
           </MenuItem>
           {
-            data.map(res=>{
-              return <MenuItem key={res.code} value={res.name}>{res.name}</MenuItem>
+            page.map(res=>{
+              return <MenuItem key={res.original.code} value={res.original.name}>{res.original.name}</MenuItem>
             })
           }
           
          
         </Select>
       </FormControl>
-      
-   <table {...getTableProps()}>
-   <thead>
-     {// Loop over the header rows
-     headerGroups.map(headerGroup => (
-       // Apply the header row props
-       <tr {...headerGroup.getHeaderGroupProps()}>
-         {// Loop over the headers in each row
-         headerGroup.headers.map(column => (
-           // Apply the header cell props
-           <th {...column.getHeaderProps()}>
-             {// Render the header
-             column.render('Header')}
-           </th>
-         ))}
-       </tr>
-     ))}
-   </thead>
-   {/* Apply the table body props */}
-   {
-      globalFilteredRows.length!==0? <tbody {...getTableBodyProps()}>
-      {// Loop over the table rows
-      rows.map(row => {
-        // Prepare the row for display
-        prepareRow(row)
-       
-        return (
-          // Apply the row props
-          <tr {...row.getRowProps()}>
-            {// Loop over the rows cells
-            row.cells.map(cell => {
-              // Apply the cell props
-              return (
-                
-                <td {...cell.getCellProps()}>
-                
-                  {// Render the cell contents
-                  
-                  cell.render('Cell')}
-                </td>
-              )
-            })}
+    <table {...getTableProps()}>
+      <thead>
+        {headerGroups.map(headerGroup => (
+          <tr {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map(column => (
+              <th {...column.getHeaderProps()}>
+                {column.render("Header")}
+                {/* Render the columns filter UI */}
+              </th>
+            ))}
           </tr>
-        )
-      })}
-    </tbody>:<tbody><tr><td>No rows Found</td></tr></tbody>
-
-   }
-  
- </table>
- 
-
-    
-
-  
-
-      {/* <FormControl className={classes.formControl}>
-        <InputLabel id="demo-simple-select-label">Country</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={age}
-          onChange={handleChange}
-        >
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-      </FormControl>
-      <FormControl className={classes.formControl}>
-        <InputLabel id="demo-simple-select-helper-label">Age</InputLabel>
-        <Select
-          labelId="demo-simple-select-helper-label"
-          id="demo-simple-select-helper"
-          value={age}
-          onChange={handleChange}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Some important helper text</FormHelperText>
-      </FormControl>
-      <FormControl className={classes.formControl}>
-        <Select
-          value={age}
-          onChange={handleChange}
-          displayEmpty
-          className={classes.selectEmpty}
-          inputProps={{ 'aria-label': 'Without label' }}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Without label</FormHelperText>
-      </FormControl>
-      <FormControl className={classes.formControl}>
-        <InputLabel shrink id="demo-simple-select-placeholder-label-label">
-          Age
-        </InputLabel>
-        <Select
-          labelId="demo-simple-select-placeholder-label-label"
-          id="demo-simple-select-placeholder-label"
-          value={age}
-          onChange={handleChange}
-          displayEmpty
-          className={classes.selectEmpty}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Label + placeholder</FormHelperText>
-      </FormControl>
-      <FormControl className={classes.formControl} disabled>
-        <InputLabel id="demo-simple-select-disabled-label">Name</InputLabel>
-        <Select
-          labelId="demo-simple-select-disabled-label"
-          id="demo-simple-select-disabled"
-          value={age}
-          onChange={handleChange}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Disabled</FormHelperText>
-      </FormControl>
-      <FormControl className={classes.formControl} error>
-        <InputLabel id="demo-simple-select-error-label">Name</InputLabel>
-        <Select
-          labelId="demo-simple-select-error-label"
-          id="demo-simple-select-error"
-          value={age}
-          onChange={handleChange}
-          renderValue={(value) => `⚠️  - ${value}`}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Error</FormHelperText>
-      </FormControl>
-      <FormControl className={classes.formControl}>
-        <InputLabel id="demo-simple-select-readonly-label">Name</InputLabel>
-        <Select
-          labelId="demo-simple-select-readonly-label"
-          id="demo-simple-select-readonly"
-          value={age}
-          onChange={handleChange}
-          inputProps={{ readOnly: true }}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Read only</FormHelperText>
-      </FormControl>
-      <FormControl className={classes.formControl}>
-        <InputLabel id="demo-simple-select-autowidth-label">Age</InputLabel>
-        <Select
-          labelId="demo-simple-select-autowidth-label"
-          id="demo-simple-select-autowidth"
-          value={age}
-          onChange={handleChange}
-          autoWidth
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Auto width</FormHelperText>
-      </FormControl>
-      <FormControl className={classes.formControl}>
-        <Select
-          value={age}
-          onChange={handleChange}
-          displayEmpty
-          className={classes.selectEmpty}
-          inputProps={{ 'aria-label': 'Without label' }}
-        >
-          <MenuItem value="" disabled>
-            Placeholder
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Placeholder</FormHelperText>
-      </FormControl>
-      <FormControl required className={classes.formControl}>
-        <InputLabel id="demo-simple-select-required-label">Age</InputLabel>
-        <Select
-          labelId="demo-simple-select-required-label"
-          id="demo-simple-select-required"
-          value={age}
-          onChange={handleChange}
-          className={classes.selectEmpty}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        <FormHelperText>Required</FormHelperText>
-      </FormControl>
+        ))}
+      </thead>
+      <tbody {...getTableBodyProps()}>
+        { page.length!=0?  page.map((row, i) => {
+          prepareRow(row);
+          return (
+            <tr {...row.getRowProps()}>
+              {row.cells.map(cell => {
+                return (
+                  <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                );
+              })}
+            </tr>
+          );
+        }):"NO DATA FOUND"}
+      </tbody>
+    </table>
+    <div className="pagination">
       
-      <FormControl variant="filled" className={classes.formControl}>
-        <InputLabel id="demo-simple-select-filled-label">Age</InputLabel>
-        <Select
-          labelId="demo-simple-select-filled-label"
-          id="demo-simple-select-filled"
-          value={age}
-          onChange={handleChange}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-      </FormControl> */}
+      
+
+      <button onClick={() => nextPage()} disabled={!canNextPage}>
+        {"5 more"}
+      </button>
     </div>
+
+    <br />
+    
+  </>
    )
 
  }
 
-export default User
-
-
+export default Admin
